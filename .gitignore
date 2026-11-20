@@ -1,0 +1,13 @@
+.terraform
+*.zip
+*png
+venv
+build
+package
+!Diagram.png
+*.mp3
+node_modules/
+dist
+.env
+.env.*
+!.env.example
