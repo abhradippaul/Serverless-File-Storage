@@ -8,6 +8,21 @@ output "s3_bucket_for_file_storage" {
   description = "The name of the S3 bucket for file storage"
 }
 
+output "frontend_website_url" {
+  value       = "http://${module.s3_bucket_for_frontend_storage.website_endpoint}"
+  description = "The static website hosting URL"
+}
+
+# output "cloudfront_domain_name" {
+#   value       = module.cloudfront.distribution_domain_name
+#   description = "The domain name of the CloudFront distribution"
+# }
+
+# output "cloudfront_distribution_id" {
+#   value       = module.cloudfront.distribution_id
+#   description = "The ID of the CloudFront distribution"
+# }
+
 output "lambda_backend_arn" {
   value       = module.lambda_backend.lambda_function_arn
   description = "The ARN of the Backend Lambda"

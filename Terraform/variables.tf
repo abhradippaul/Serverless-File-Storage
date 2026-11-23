@@ -83,7 +83,7 @@ variable "backend_lambda_architecture" {
 variable "backend_lambda_memory_size" {
   type        = number
   description = "The memory size of the Lambda function."
-  default     = 256
+  default     = 128
 }
 
 variable "backend_lambda_timeout" {
