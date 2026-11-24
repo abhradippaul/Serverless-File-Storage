@@ -91,3 +91,9 @@ variable "backend_lambda_timeout" {
   description = "The timeout for the Lambda function."
   default     = 30
 }
+
+variable "api_gateway_name" {
+  type        = string
+  description = "The name of the API Gateway HTTP API."
+  default     = "file-storage-aws-api"
+}

@@ -7,6 +7,7 @@ module "s3_bucket_for_file_storage" {
 module "s3_bucket_for_frontend_storage" {
   source      = "./modules/frontend_s3_bucket"
   bucket_name = var.frontend_bucket_name
+  aws_profile = var.aws_profile
   tags        = var.tags
 }
 
@@ -37,6 +38,16 @@ module "lambda_backend" {
     NODE_ENV                 = "production"
     FILE_STORAGE_BUCKET_NAME = var.file_storage_bucket_name
   }
+
+  tags = var.tags
+}
+
+module "apigateway" {
+  source = "./modules/apigateway"
+
+  api_name             = var.api_gateway_name
+  lambda_invoke_arn    = module.lambda_backend.lambda_invoke_arn
+  lambda_function_name = module.lambda_backend.lambda_function_name
 
   tags = var.tags
 }

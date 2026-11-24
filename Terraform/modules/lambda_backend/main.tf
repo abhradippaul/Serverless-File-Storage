@@ -171,16 +171,3 @@ resource "aws_lambda_permission" "function_url" {
   principal              = "*"
   function_url_auth_type = "NONE"
 }
-
-# # Optional SQS event source mapping if sqs_arn is provided
-# resource "aws_lambda_event_source_mapping" "this" {
-#   count                   = var.sqs_arn != "" ? 1 : 0
-#   event_source_arn        = var.sqs_arn
-#   function_name           = aws_lambda_function.this.arn
-#   batch_size              = 1
-#   function_response_types = ["ReportBatchItemFailures"]
-
-#   scaling_config {
-#     maximum_concurrency = 5
-#   }
-# }

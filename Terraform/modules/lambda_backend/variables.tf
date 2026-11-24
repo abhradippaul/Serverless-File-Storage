@@ -61,12 +61,6 @@ variable "s3_bucket_arn" {
   description = "The ARN of the S3 bucket for file storage."
 }
 
-variable "sqs_arn" {
-  type        = string
-  description = "The ARN of an SQS queue (optional)."
-  default     = ""
-}
-
 variable "ephemeral_storage" {
   type        = number
   description = "The ephemeral storage size of the Lambda function in MB."

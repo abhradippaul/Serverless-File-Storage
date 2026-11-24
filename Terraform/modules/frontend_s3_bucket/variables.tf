@@ -12,7 +12,6 @@ variable "source_path" {
 variable "aws_profile" {
   type        = string
   description = "The AWS CLI profile to use."
-  default     = ""
 }
 
 variable "tags" {

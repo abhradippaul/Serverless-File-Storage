@@ -33,6 +33,11 @@ output "lambda_backend_function_url" {
   description = "The HTTP Function URL of the Backend Lambda"
 }
 
+output "api_gateway_endpoint" {
+  value       = module.apigateway.api_endpoint
+  description = "The invoke URL of the API Gateway stage"
+}
+
 # output "sqs_queue_url" {
 #   value       = module.sqs_module.sqs_queue_url
 #   description = "The URL of the SQS queue"
