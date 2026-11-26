@@ -22,9 +22,9 @@ variable "visibility_timeout_seconds" {
   type = number
 }
 
-# variable "source_arn" {
-#   type = string
-# }
+variable "source_arn" {
+  type = string
+}
 
 variable "tags" {
   type = map(string)

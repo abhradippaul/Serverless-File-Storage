@@ -8,28 +8,28 @@ resource "aws_sqs_queue" "this" {
   tags                       = var.tags
 }
 
-# data "aws_iam_policy_document" "this" {
-#   statement {
-#     sid    = "PolicyForSQSFromLambda"
-#     effect = "Allow"
+data "aws_iam_policy_document" "this" {
+  statement {
+    sid    = "PolicyForSQSFromS3"
+    effect = "Allow"
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["lambda.amazonaws.com"]
-#     }
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
 
-#     actions   = ["sqs:SendMessage"]
-#     resources = [aws_sqs_queue.this.arn]
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.this.arn]
 
-#     condition {
-#       test     = "ArnEquals"
-#       variable = "aws:SourceArn"
-#       values   = [var.source_arn]
-#     }
-#   }
-# }
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [var.source_arn]
+    }
+  }
+}
 
-# resource "aws_sqs_queue_policy" "this" {
-#   queue_url = aws_sqs_queue.this.id
-#   policy    = data.aws_iam_policy_document.this.json
-# }
+resource "aws_sqs_queue_policy" "this" {
+  queue_url = aws_sqs_queue.this.id
+  policy    = data.aws_iam_policy_document.this.json
+}

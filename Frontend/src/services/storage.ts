@@ -7,6 +7,7 @@ import type {
 
 const USER_ID_KEY = 'serverless_storage_user_id';
 const STORAGE_PREFIX = 'serverless_files_';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 /**
  * Returns existing persistent anonymous user ID or creates a new one.
@@ -55,7 +56,7 @@ export function savePersistedFiles(userId: string, files: UploadedFile[]): void 
  * Fetches S3 and server config status.
  */
 export async function fetchServerConfig(): Promise<S3ConfigResponse> {
-  const response = await fetch('/api/config');
+  const response = await fetch(`${API_BASE_URL}/api/config`);
   if (!response.ok) {
     throw new Error(`Failed to fetch config (${response.status})`);
   }
@@ -70,7 +71,7 @@ export async function getPresignedUploadUrl(
   fileType: string,
   userId: string
 ): Promise<PresignedUploadResponse> {
-  const response = await fetch('/api/files/upload-url', {
+  const response = await fetch(`${API_BASE_URL}/api/files/upload-url`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ export async function getPresignedDownloadUrl(
   key: string,
   originalName: string
 ): Promise<PresignedDownloadResponse> {
-  const response = await fetch('/api/files/download-url', {
+  const response = await fetch(`${API_BASE_URL}/api/files/download-url`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -169,7 +170,7 @@ export async function getPresignedDownloadUrl(
  * Requests backend to delete a file from S3.
  */
 export async function deleteS3File(key: string): Promise<void> {
-  const response = await fetch(`/api/files?key=${encodeURIComponent(key)}`, {
+  const response = await fetch(`${API_BASE_URL}/api/files?key=${encodeURIComponent(key)}`, {
     method: 'DELETE',
   });
 

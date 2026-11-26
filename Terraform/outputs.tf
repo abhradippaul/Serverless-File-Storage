@@ -38,10 +38,35 @@ output "api_gateway_endpoint" {
   description = "The invoke URL of the API Gateway stage"
 }
 
-# output "sqs_queue_url" {
-#   value       = module.sqs_module.sqs_queue_url
-#   description = "The URL of the SQS queue"
-# }
+output "creation_sqs_queue_url" {
+  value       = module.sqs_creation.sqs_queue_url
+  description = "The URL of the creation SQS queue"
+}
+
+output "creation_sqs_queue_arn" {
+  value       = module.sqs_creation.sqs_queue_arn
+  description = "The ARN of the creation SQS queue"
+}
+
+output "deletion_sqs_queue_url" {
+  value       = module.sqs_deletion.sqs_queue_url
+  description = "The URL of the deletion SQS queue"
+}
+
+output "deletion_sqs_queue_arn" {
+  value       = module.sqs_deletion.sqs_queue_arn
+  description = "The ARN of the deletion SQS queue"
+}
+
+output "lambda_metadata_processor_creation_arn" {
+  value       = module.lambda_metadata_processor_creation.lambda_function_arn
+  description = "The ARN of the Metadata Processor Creation Lambda"
+}
+
+output "lambda_metadata_processor_deletion_arn" {
+  value       = module.lambda_metadata_processor_deletion.lambda_function_arn
+  description = "The ARN of the Metadata Processor Deletion Lambda"
+}
 
 # output "lambda_dispatcher_arn" {
 #   value       = module.lambda_module_dispatcher.lambda_function_arn

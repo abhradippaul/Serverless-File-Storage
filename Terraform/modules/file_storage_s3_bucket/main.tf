@@ -17,15 +17,18 @@ resource "aws_s3_bucket_cors_configuration" "this" {
   }
 }
 
-# resource "aws_s3_bucket_notification" "bucket_notification" {
-#   bucket = var.bucket_name
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = var.bucket_name
 
-#   lambda_function {
-#     lambda_function_arn = var.lambda_function_arn
-#     events              = ["s3:ObjectCreated:*"]
-#     filter_prefix       = "audio-input/"
-#     filter_suffix       = ".mp3"
-#   }
+  queue {
+    queue_arn = var.creation_sqs_queue_arn
+    events    = ["s3:ObjectCreated:*"]
+  }
 
-#   depends_on = [aws_s3_bucket.this]
-# }
+  queue {
+    queue_arn = var.deletion_sqs_queue_arn
+    events    = ["s3:ObjectRemoved:*"]
+  }
+
+  depends_on = [aws_s3_bucket.this]
+}

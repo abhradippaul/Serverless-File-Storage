@@ -30,3 +30,8 @@ variable "tags" {
   description = "Tags to apply to CloudFront resources"
   default     = {}
 }
+
+variable "enabled" {
+  type        = bool
+  description = "Enable CloudFront distribution"
+}

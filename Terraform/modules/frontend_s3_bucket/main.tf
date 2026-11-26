@@ -27,7 +27,8 @@ locals {
 resource "terraform_data" "frontend_package" {
   triggers_replace = [
     aws_s3_bucket.this.id,
-    local.frontend_hash
+    local.frontend_hash,
+    var.api_url
   ]
 
   depends_on = [aws_s3_bucket.this]
@@ -38,8 +39,9 @@ resource "terraform_data" "frontend_package" {
       set -e
       PROFILE_FLAG="${var.aws_profile != "" ? "--profile ${var.aws_profile}" : ""}"
       REGION_FLAG="--region ${data.aws_region.current.region}"
+      export VITE_API_URL="${var.api_url}"
 
-      echo "==> Building Frontend application..."
+      echo "==> Building Frontend application (VITE_API_URL=$VITE_API_URL)..."
       if command -v pnpm >/dev/null 2>&1; then
         pnpm install
         pnpm build
@@ -64,4 +66,32 @@ resource "aws_s3_bucket_website_configuration" "this" {
   error_document {
     key = "index.html"
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  depends_on = [aws_s3_bucket_public_access_block.this]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.this.arn}/*"
+      }
+    ]
+  })
 }

@@ -14,6 +14,12 @@ variable "aws_profile" {
   description = "The AWS CLI profile to use."
 }
 
+variable "api_url" {
+  type        = string
+  description = "Base URL of the backend API Gateway endpoint."
+  default     = ""
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to the S3 bucket."

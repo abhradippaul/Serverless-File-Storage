@@ -9,7 +9,12 @@ variable "tags" {
   default     = {}
 }
 
-# variable "lambda_function_arn" {
-#   type        = string
-#   description = "The ARN of the Lambda function."
-# }
+variable "creation_sqs_queue_arn" {
+  type        = string
+  description = "The ARN of the SQS queue for object creation events."
+}
+
+variable "deletion_sqs_queue_arn" {
+  type        = string
+  description = "The ARN of the SQS queue for object deletion events."
+}

@@ -20,8 +20,7 @@ export function getRegion(): string {
 export function getBucketName(): string {
   const bucket =
     process.env.FILE_STORAGE_BUCKET_NAME ||
-    process.env.AWS_BUCKET_NAME ||
-    'file-storage-aws-bucket';
+    process.env.AWS_BUCKET_NAME
 
   if (!bucket) {
     throw new Error('Bucket name is missing. Please set FILE_STORAGE_BUCKET_NAME or AWS_BUCKET_NAME.');

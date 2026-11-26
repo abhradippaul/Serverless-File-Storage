@@ -13,7 +13,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     origin_id                = var.frontend_bucket_origin_id
   }
 
-  enabled             = true
+  enabled             = var.enabled
   comment             = var.comment
   default_root_object = "index.html"
 
