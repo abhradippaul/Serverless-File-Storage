@@ -1,7 +1,6 @@
 import json
 import os
 from urllib.parse import unquote_plus
-
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
 

@@ -68,6 +68,16 @@ output "lambda_metadata_processor_deletion_arn" {
   description = "The ARN of the Metadata Processor Deletion Lambda"
 }
 
+output "metadata_dynamodb_table_name" {
+  value       = module.dynamodb_metadata.table_name
+  description = "The name of the metadata DynamoDB table"
+}
+
+output "metadata_dynamodb_table_arn" {
+  value       = module.dynamodb_metadata.table_arn
+  description = "The ARN of the metadata DynamoDB table"
+}
+
 # output "lambda_dispatcher_arn" {
 #   value       = module.lambda_module_dispatcher.lambda_function_arn
 #   description = "The ARN of the Dispatcher Lambda"

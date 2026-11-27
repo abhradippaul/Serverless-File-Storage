@@ -57,8 +57,7 @@ variable "sqs_arn" {
 
 variable "dynamodb_table_arn" {
   type        = string
-  description = "Optional ARN of the DynamoDB table for file metadata."
-  default     = null
+  description = "ARN of the DynamoDB table for file metadata."
 }
 
 variable "environment_variables" {

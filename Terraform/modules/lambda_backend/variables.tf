@@ -61,6 +61,11 @@ variable "s3_bucket_arn" {
   description = "The ARN of the S3 bucket for file storage."
 }
 
+variable "dynamodb_table_arn" {
+  type        = string
+  description = "The ARN of the DynamoDB table for file metadata."
+}
+
 variable "ephemeral_storage" {
   type        = number
   description = "The ephemeral storage size of the Lambda function in MB."

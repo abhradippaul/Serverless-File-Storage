@@ -6,7 +6,6 @@ import type {
 } from '../types';
 
 const USER_ID_KEY = 'serverless_storage_user_id';
-const STORAGE_PREFIX = 'serverless_files_';
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 /**
@@ -27,29 +26,18 @@ export function getOrCreateUserId(): string {
 }
 
 /**
- * Retrieves persisted files for a user from localStorage.
+ * Fetches uploaded files for a user from the backend (DynamoDB).
  */
-export function loadPersistedFiles(userId: string): UploadedFile[] {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${userId}`);
-    if (!raw) return [];
-    const parsed: UploadedFile[] = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    console.error('Failed to load persisted files from localStorage:', err);
-    return [];
+export async function fetchUserFiles(userId: string): Promise<UploadedFile[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/files?userId=${encodeURIComponent(userId)}`
+  );
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.details || data.error || `Failed to fetch files (${response.status})`);
   }
-}
-
-/**
- * Persists files for a user into localStorage.
- */
-export function savePersistedFiles(userId: string, files: UploadedFile[]): void {
-  try {
-    localStorage.setItem(`${STORAGE_PREFIX}${userId}`, JSON.stringify(files));
-  } catch (err) {
-    console.error('Failed to save files to localStorage:', err);
-  }
+  const data = await response.json();
+  return Array.isArray(data.files) ? data.files : [];
 }
 
 /**

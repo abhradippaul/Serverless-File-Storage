@@ -12,6 +12,7 @@ import {
   deleteS3Object,
   getS3Config,
 } from './s3.js';
+import { listUserFiles } from './dynamodb.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,7 @@ app.get(['/', '/home'], (_req: Request, res: Response) => {
       home: '/',
       health: '/health',
       s3Config: '/api/config',
+      listFiles: 'GET /api/files?userId=...',
       getUploadUrl: 'POST /api/files/upload-url',
       getDownloadUrl: 'POST /api/files/download-url',
       deleteFile: 'DELETE /api/files',
@@ -49,6 +51,24 @@ app.get('/health', (_req: Request, res: Response) => {
 // S3 Configuration info (safe, no secrets)
 app.get('/api/config', (_req: Request, res: Response) => {
   res.status(200).json(getS3Config());
+});
+
+/**
+ * List uploaded files for a user from DynamoDB
+ * Query: ?userId=...
+ */
+app.get('/api/files', async (req: Request, res: Response) => {
+  try {
+    const userId = (req.query.userId as string) || 'anonymous';
+    const files = await listUserFiles(userId);
+    res.status(200).json({ files });
+  } catch (error: any) {
+    console.error('Error listing files from DynamoDB:', error);
+    res.status(500).json({
+      error: 'Failed to list files',
+      details: error.message || 'Internal server error',
+    });
+  }
 });
 
 /**

@@ -42,10 +42,12 @@ module "lambda_backend" {
   timeout             = var.backend_lambda_timeout
   enable_function_url = var.enable_function_url
   s3_bucket_arn       = module.s3_bucket_for_file_storage.s3_bucket_arn
+  dynamodb_table_arn  = module.dynamodb_metadata.table_arn
 
   environment_variables = {
     NODE_ENV                 = "production"
     FILE_STORAGE_BUCKET_NAME = var.file_storage_bucket_name
+    DYNAMODB_TABLE_NAME      = module.dynamodb_metadata.table_name
   }
 
   tags = var.tags
@@ -87,6 +89,15 @@ module "sqs_deletion" {
   tags                       = var.tags
 }
 
+module "dynamodb_metadata" {
+  source = "./modules/dynamodb"
+
+  name      = var.metadata_dynamodb_table_name
+  hash_key  = "user_id"
+  range_key = "file_id"
+  tags      = var.tags
+}
+
 module "lambda_metadata_processor_creation" {
   source = "./modules/lambda_metadata_processor"
 
@@ -99,12 +110,12 @@ module "lambda_metadata_processor_creation" {
   timeout            = var.metadata_processor_lambda_timeout
   s3_bucket_arn      = "arn:aws:s3:::${var.file_storage_bucket_name}"
   sqs_arn            = module.sqs_creation.sqs_queue_arn
-  dynamodb_table_arn = "arn:aws:dynamodb:${var.aws_region}:*:table/${var.metadata_dynamodb_table_name}"
+  dynamodb_table_arn = module.dynamodb_metadata.table_arn
 
   environment_variables = {
     FILE_STORAGE_BUCKET_NAME = var.file_storage_bucket_name
     SQS_QUEUE_URL            = module.sqs_creation.sqs_queue_url
-    DYNAMODB_TABLE_NAME      = var.metadata_dynamodb_table_name
+    DYNAMODB_TABLE_NAME      = module.dynamodb_metadata.table_name
   }
 
   tags = var.tags
@@ -121,12 +132,12 @@ module "lambda_metadata_processor_deletion" {
   memory_size        = var.metadata_processor_lambda_memory_size
   timeout            = var.metadata_processor_lambda_timeout
   sqs_arn            = module.sqs_deletion.sqs_queue_arn
-  dynamodb_table_arn = "arn:aws:dynamodb:${var.aws_region}:*:table/${var.metadata_dynamodb_table_name}"
+  dynamodb_table_arn = module.dynamodb_metadata.table_arn
 
   environment_variables = {
     FILE_STORAGE_BUCKET_NAME = var.file_storage_bucket_name
     SQS_QUEUE_URL            = module.sqs_deletion.sqs_queue_url
-    DYNAMODB_TABLE_NAME      = var.metadata_dynamodb_table_name
+    DYNAMODB_TABLE_NAME      = module.dynamodb_metadata.table_name
   }
 
   tags = var.tags

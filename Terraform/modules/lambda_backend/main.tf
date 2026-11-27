@@ -72,6 +72,25 @@ resource "aws_iam_role_policy" "lambda_s3" {
   policy = data.aws_iam_policy_document.lambda_s3.json
 }
 
+data "aws_iam_policy_document" "lambda_dynamodb" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:Query",
+      "dynamodb:GetItem"
+    ]
+
+    resources = [var.dynamodb_table_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_dynamodb" {
+  name   = "${var.function_name}_dynamodb_policy"
+  role   = aws_iam_role.this.id
+  policy = data.aws_iam_policy_document.lambda_dynamodb.json
+}
+
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = var.log_retention_days

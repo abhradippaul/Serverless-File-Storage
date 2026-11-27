@@ -22,8 +22,7 @@ import {
 import type { UploadedFile, S3ConfigResponse } from './types';
 import {
   getOrCreateUserId,
-  loadPersistedFiles,
-  savePersistedFiles,
+  fetchUserFiles,
   getPresignedUploadUrl,
   uploadToS3Direct,
   getPresignedDownloadUrl,
@@ -34,7 +33,9 @@ import './App.css';
 
 export default function App() {
   const [userId] = useState<string>(() => getOrCreateUserId());
-  const [files, setFiles] = useState<UploadedFile[]>(() => loadPersistedFiles(userId));
+  const [files, setFiles] = useState<UploadedFile[]>([]);
+  const [isFilesLoading, setIsFilesLoading] = useState(true);
+  const [filesError, setFilesError] = useState<string | null>(null);
   const [serverConfig, setServerConfig] = useState<S3ConfigResponse | null>(null);
   const [, setIsConfigLoading] = useState(true);
 
@@ -52,10 +53,24 @@ export default function App() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Persist files in localStorage whenever files state changes
+  const loadFilesFromBackend = async () => {
+    setIsFilesLoading(true);
+    setFilesError(null);
+    try {
+      const remoteFiles = await fetchUserFiles(userId);
+      setFiles(remoteFiles);
+    } catch (err: any) {
+      console.error('Failed to load files from backend:', err);
+      setFilesError(err.message || 'Could not load uploaded files');
+    } finally {
+      setIsFilesLoading(false);
+    }
+  };
+
+  // Load files from DynamoDB via backend on mount
   useEffect(() => {
-    savePersistedFiles(userId, files);
-  }, [files, userId]);
+    loadFilesFromBackend();
+  }, [userId]);
 
   // Load backend / S3 config on mount
   useEffect(() => {
@@ -249,13 +264,6 @@ export default function App() {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // Clear all files
-  const handleClearAll = () => {
-    if (window.confirm('Clear all uploaded files from this session history? Files in S3 will remain.')) {
-      setFiles([]);
-    }
-  };
-
   const filteredFiles = files.filter((f) =>
     f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     f.key.toLowerCase().includes(searchQuery.toLowerCase())
@@ -390,39 +398,53 @@ export default function App() {
             </div>
             <div className="list-controls">
               {files.length > 0 && (
-                <>
-                  <div className="search-wrap">
-                    <Search className="search-icon" />
-                    <input
-                      type="text"
-                      placeholder="Search files..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="search-input"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-subtle"
-                    onClick={handleClearAll}
-                    title="Clear history from browser storage"
-                  >
-                    Clear History
-                  </button>
-                </>
+                <div className="search-wrap">
+                  <Search className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search files..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="search-input"
+                  />
+                </div>
               )}
+              <button
+                type="button"
+                className="btn btn-subtle"
+                onClick={loadFilesFromBackend}
+                disabled={isFilesLoading}
+                title="Refresh files from DynamoDB"
+              >
+                <RefreshCw className={`mini-icon ${isFilesLoading ? 'spin-icon' : ''}`} /> Refresh
+              </button>
             </div>
           </div>
 
           <p className="card-description">
-            Your files are persistently remembered in this browser. Reloading or refreshing the page will keep your uploads list intact.
+            Your uploaded files are fetched directly from the backend via DynamoDB.
           </p>
 
-          {files.length === 0 ? (
+          {filesError && (
+            <div className="alert alert-error">
+              <AlertCircle className="alert-icon" />
+              <div>
+                <strong>Load Error:</strong> {filesError}
+              </div>
+            </div>
+          )}
+
+          {isFilesLoading && files.length === 0 ? (
+            <div className="empty-state">
+              <RefreshCw className="empty-icon spin-icon" />
+              <h3>Loading files...</h3>
+              <p>Fetching your uploaded items from DynamoDB.</p>
+            </div>
+          ) : files.length === 0 ? (
             <div className="empty-state">
               <HardDrive className="empty-icon" />
               <h3>No files uploaded yet</h3>
-              <p>Upload a file using the form above. Once uploaded, it will appear here and persist across refreshes.</p>
+              <p>Upload a file using the form above. Once processed, it will appear here from DynamoDB.</p>
             </div>
           ) : filteredFiles.length === 0 ? (
             <div className="empty-state">
@@ -517,7 +539,7 @@ export default function App() {
 
       {/* Footer Info */}
       <footer className="app-footer">
-        <span>No login required • Files linked to anonymous session in localStorage • Direct AWS S3 presigned transfers</span>
+        <span>No login required • File metadata stored in DynamoDB • Direct AWS S3 presigned transfers</span>
       </footer>
     </div>
   );

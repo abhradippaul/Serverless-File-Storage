@@ -28,31 +28,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# data "aws_iam_policy_document" "lambda_s3" {
-#   count = var.s3_bucket_arn != null ? 1 : 0
-
-#   statement {
-#     effect = "Allow"
-
-#     actions = [
-#       "s3:GetObject"
-#     ]
-
-#     resources = ["${var.s3_bucket_arn}/*"]
-#   }
-# }
-
-# resource "aws_iam_role_policy" "lambda_s3" {
-#   count = var.s3_bucket_arn != null ? 1 : 0
-
-#   name   = "${var.function_name}_s3_policy"
-#   role   = aws_iam_role.this.id
-#   policy = data.aws_iam_policy_document.lambda_s3[0].json
-# }
-
 data "aws_iam_policy_document" "lambda_dynamodb" {
-  count = var.dynamodb_table_arn != null ? 1 : 0
-
   statement {
     effect = "Allow"
 
@@ -68,36 +44,30 @@ data "aws_iam_policy_document" "lambda_dynamodb" {
 }
 
 resource "aws_iam_role_policy" "lambda_dynamodb" {
-  count = var.dynamodb_table_arn != null ? 1 : 0
-
   name   = "${var.function_name}_dynamodb_policy"
   role   = aws_iam_role.this.id
-  policy = data.aws_iam_policy_document.lambda_dynamodb[0].json
+  policy = data.aws_iam_policy_document.lambda_dynamodb.json
 }
 
-# data "aws_iam_policy_document" "lambda_sqs" {
-#   count = var.sqs_arn != null ? 1 : 0
+data "aws_iam_policy_document" "lambda_sqs" {
+  statement {
+    effect = "Allow"
 
-#   statement {
-#     effect = "Allow"
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
 
-#     actions = [
-#       "sqs:ReceiveMessage",
-#       "sqs:DeleteMessage",
-#       "sqs:GetQueueAttributes"
-#     ]
+    resources = [var.sqs_arn]
+  }
+}
 
-#     resources = [var.sqs_arn]
-#   }
-# }
-
-# resource "aws_iam_role_policy" "lambda_sqs" {
-#   count = var.sqs_arn != null ? 1 : 0
-
-#   name   = "${var.function_name}_sqs_policy"
-#   role   = aws_iam_role.this.id
-#   policy = data.aws_iam_policy_document.lambda_sqs[0].json
-# }
+resource "aws_iam_role_policy" "lambda_sqs" {
+  name   = "${var.function_name}_sqs_policy"
+  role   = aws_iam_role.this.id
+  policy = data.aws_iam_policy_document.lambda_sqs.json
+}
 
 resource "aws_lambda_event_source_mapping" "sqs" {
   event_source_arn        = var.sqs_arn
@@ -109,7 +79,7 @@ resource "aws_lambda_event_source_mapping" "sqs" {
     maximum_concurrency = 5
   }
 
-  # depends_on = [aws_iam_role_policy.lambda_sqs]
+  depends_on = [aws_iam_role_policy.lambda_sqs]
 }
 
 resource "aws_cloudwatch_log_group" "this" {
